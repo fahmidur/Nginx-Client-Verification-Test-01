@@ -24,3 +24,4 @@ system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj} -out #{$clie
 
 # Sign the client certificate with our CA cert.  Unlike signing our own server cert, this is what we want to do.
 system("openssl x509 -req -days 365 -in #{$client_priv_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ_crt}")
+system("cat #{$client_publ_crt} #{$client_priv_nopass} > #{$client_publ_priv_pem}")
