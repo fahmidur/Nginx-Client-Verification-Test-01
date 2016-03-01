@@ -14,8 +14,13 @@ $client_ca_root_priv_nopass = "#{$client_ca_root_priv}.nopass"
 
 $server_ca_root_priv = "#{$out}/server_ca_root_priv.key"
 $server_ca_root_csr  = "#{$out}/server_ca_root_priv.csr"
-$server_ca_root_publ = "#{$out}/server_ca_root_priv.crt"
+$server_ca_root_publ = "#{$out}/server_ca_root_publ.crt"
 $server_ca_root_priv_nopass = "#{$server_ca_root_priv}.nopass"
+
+$client_priv = "#{$out}/client_priv.key"
+$client_priv_csr  = "#{$out}/client_priv.csr"
+$client_publ_crt = "#{$out}/client_publ.crt"
+$client_priv_nopass = "$client_priv.nopass"
 
 # Create the CA Key and Certificate for signing Client Certs
 system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
@@ -31,8 +36,9 @@ system("openssl rsa -in #{$server_ca_root_priv} -out #{$server_ca_root_priv_nopa
 system("openssl x509 -req -days 365 -in #{$server_ca_root_csr} -signkey #{$server_ca_root_priv_nopass} -out #{$server_ca_root_publ}");
 
 # Create the Client Key and CSR
-# openssl genrsa -des3 -out client.key 1024
-# openssl req -new -key client.key -out client.csr
+system("openssl genrsa #{$enc} -out #{$client_priv} -passout #{$pass} #{$bits}")
+system("openssl rsa -in #{$client_priv} -out #{$client_priv_nopass} -passin #{$pass}")
+system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj} -out #{$client_priv_csr}")
 
 # Sign the client certificate with our CA cert.  Unlike signing our own server cert, this is what we want to do.
-# openssl x509 -req -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out client.crt
+system("openssl x509 -req -days 365 -in #{$client_priv_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ_crt}")
