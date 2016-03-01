@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 
 
+# curl -vv \
+# --cacert /home/syed/works/help/hlam/tasks/nginx-verify-client/server.crt \
+# --key /home/syed/works/help/hlam/tasks/nginx-verify-client/client.key.unlocked \
+# --cert /home/syed/works/help/hlam/tasks/nginx-verify-client/client.crt \
+# https://lvh.me
+
 curl -vv \
 --cacert /home/syed/works/help/hlam/tasks/nginx-verify-client/server.crt \
---key /home/syed/works/help/hlam/tasks/nginx-verify-client/client.key.unlocked \
---cert /home/syed/works/help/hlam/tasks/nginx-verify-client/client.crt \
+-E /home/syed/works/help/hlam/tasks/nginx-verify-client/client.crt_and_key.pem:testing \
 https://lvh.me
