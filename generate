@@ -1,19 +1,38 @@
-#!/usr/bin/bash
+#!/usr/bin/env ruby
+
+system("./cleanup")
+
+$bits = 4096;
+$pass = "file:inputs/passphrase.txt"
+$enc = "-aes128"
+$subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
+$out = "./output"
+
+$client_ca_root_priv = "#{$out}/client_ca_root_priv.key"
+$client_ca_root_publ = "#{$out}/client_ca_root_publ.crt"
+$client_ca_root_priv_nopass = "#{$client_ca_root_priv}.nopass"
+
+$server_ca_root_priv = "#{$out}/server_ca_root_priv.key"
+$server_ca_root_csr  = "#{$out}/server_ca_root_priv.csr"
+$server_ca_root_publ = "#{$out}/server_ca_root_priv.crt"
+$server_ca_root_priv_nopass = "#{$server_ca_root_priv}.nopass"
 
 # Create the CA Key and Certificate for signing Client Certs
-openssl genrsa -aes128 -out output/ca.key -passout file:inputs/passphrase.txt 4096
-openssl req -new -x509 -days 365 -key output/ca.key -passin file:inputs/passphrase.txt -subj '/C=US/ST=California/L=LosAngeles/CN=lvh.me' -out output/ca.crt
+system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
+system("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopass} -passin #{$pass}")
+system("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{$pass} -subj '#{$subj}' -out #{$client_ca_root_publ}")
 
 # Create the Server Key, CSR, and Certificate
-openssl genrsa -des3 -out server.key 1024
-openssl req -new -key server.key -out server.csr
+system("openssl genrsa #{$enc} -out #{$server_ca_root_priv} -passout #{$pass} #{$bits}")
+system("openssl req -new -key #{$server_ca_root_priv} -passin #{$pass} -subj '#{$subj}' -out #{$server_ca_root_csr}")
+system("openssl rsa -in #{$server_ca_root_priv} -out #{$server_ca_root_priv_nopass} -passin #{$pass}")
 
-# We're self signing our own server cert here.  This is a no-no in production.
-openssl x509 -req -days 365 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
+# SELF-SIGN
+system("openssl x509 -req -days 365 -in #{$server_ca_root_csr} -signkey #{$server_ca_root_priv_nopass} -out #{$server_ca_root_publ}");
 
 # Create the Client Key and CSR
-openssl genrsa -des3 -out client.key 1024
-openssl req -new -key client.key -out client.csr
+# openssl genrsa -des3 -out client.key 1024
+# openssl req -new -key client.key -out client.csr
 
 # Sign the client certificate with our CA cert.  Unlike signing our own server cert, this is what we want to do.
-openssl x509 -req -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out client.crt
+# openssl x509 -req -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out client.crt
