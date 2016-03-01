@@ -8,6 +8,9 @@ server {
     ssl_client_certificate /home/syed/works/help/hlam/tasks/nginx-verify-client/ca.crt;
     ssl_verify_client on;
 
+    # ssl_trusted_certificate /home/syed/works/help/hlam/tasks/nginx-verify-client/ca.crt;
+    # ssl_stapling off;
+
     location / {
         root   /usr/share/nginx/html;
         index  index.html index.htm;
