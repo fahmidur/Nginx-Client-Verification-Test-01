@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+curl -vsk --key /home/syed/works/help/hlam/tasks/nginx-verify-client/client.key --cert /home/syed/works/help/hlam/tasks/nginx-verify-client/client.crt https://lvh.me
