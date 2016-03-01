@@ -3,10 +3,13 @@ server {
     ssl on;
     server_name lvh.me;
 
-    ssl_certificate      /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_ca_root_publ.crt;
-    ssl_certificate_key  /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_ca_root_priv.key.nopass;
+    ssl_certificate      /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_publ.crt;
+    ssl_certificate_key  /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_priv.key.nopass;
+
     ssl_client_certificate /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/client_ca_root_publ.crt;
     ssl_verify_client optional;
+
+    ssl_stapling off;
 
     location / {
         root   /usr/share/nginx/html;

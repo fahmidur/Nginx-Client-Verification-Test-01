@@ -5,13 +5,11 @@ require 'openssl'
 
 $url = "https://lvh.me"
 
-load "./vars.rb"
-
 command = <<EOF
 curl -vv \
---cacert #{$server_ca_root_publ} \
---key #{$client_priv_nopass} \
---cert #{$client_publ_crt} \
+--cacert output/server_publ.crt \
+--key output/client_priv.key.nopass \
+--cert output/client_publ.crt \
 #{$url}
 EOF
 puts "---------------------------"
@@ -19,20 +17,3 @@ puts "EXECUTING:"
 puts command
 puts "---------------------------"
 system(command)
-
-# puts "---------------------------"
-# puts "FROM RUBY"
-# puts "---------------------------"
-#
-# uri = URI.parse($url)
-# pem = File.read($client_publ_priv_pem)
-# http = Net::HTTP.new(uri.host, uri.port)
-# http.use_ssl = true
-# http.cert = OpenSSL::X509::Certificate.new(pem)
-# http.key = OpenSSL::PKey::RSA.new(pem)
-# http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-#
-# request = Net::HTTP::Get.new(uri.request_uri)
-# response = http.request(request)
-# puts "** RESPONSE(#{response}): "
-# puts response.body
