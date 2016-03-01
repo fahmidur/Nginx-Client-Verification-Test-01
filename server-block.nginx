@@ -4,7 +4,7 @@ server {
     server_name lvh.me;
 
     ssl_certificate      /home/syed/works/help/hlam/tasks/nginx-verify-client/server.crt;
-    ssl_certificate_key  /home/syed/works/help/hlam/tasks/nginx-verify-client/server.key;
+    ssl_certificate_key  /home/syed/works/help/hlam/tasks/nginx-verify-client/server.key.unlocked;
     ssl_client_certificate /home/syed/works/help/hlam/tasks/nginx-verify-client/ca.crt;
     ssl_verify_client on;
 
