@@ -2,7 +2,7 @@
 
 # Create the CA Key and Certificate for signing Client Certs
 openssl genrsa -aes128 -out output/ca.key -passout file:inputs/passphrase.txt 4096
-openssl req -new -x509 -days 365 -key ca.key -out ca.crt
+openssl req -new -x509 -days 365 -key output/ca.key -passin file:inputs/passphrase.txt -subj '/C=US/ST=California/L=LosAngeles/CN=lvh.me' -out output/ca.crt
 
 # Create the Server Key, CSR, and Certificate
 openssl genrsa -des3 -out server.key 1024
