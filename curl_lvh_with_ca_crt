@@ -1,13 +1,16 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
+load "./vars.rb"
 
-# curl -vv \
-# --cacert /home/syed/works/help/hlam/tasks/nginx-verify-client/server.crt \
-# --key /home/syed/works/help/hlam/tasks/nginx-verify-client/client.key.unlocked \
-# --cert /home/syed/works/help/hlam/tasks/nginx-verify-client/client.crt \
-# https://lvh.me
-
+command = <<EOF
 curl -vv \
---cacert /home/syed/works/help/hlam/tasks/nginx-verify-client/server.crt \
--E /home/syed/works/help/hlam/tasks/nginx-verify-client/client.crt_and_key.pem:testing \
+--cacert #{$server_ca_root_publ} \
+--key #{$client_priv_nopass} \
+--cert #{$client_publ_crt} \
 https://lvh.me
+EOF
+puts "---------------------------"
+puts "EXECUTING:"
+puts command
+puts "---------------------------"
+system(command)
