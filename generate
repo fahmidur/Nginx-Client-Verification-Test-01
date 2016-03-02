@@ -22,7 +22,8 @@ $client_priv = "#{$out}/client_priv.key"
 $client_publ = "#{$out}/client_publ.crt"
 $client_csr  = "#{$out}/client_csr"
 $client_priv_nopass = "#{$client_priv}.nopass"
-$client_combined = "#{$out}/client_combined.pem"
+$client_combined_pem = "#{$out}/client_combined.pem"
+$client_combined_pfx = "#{$out}/client_combined.pfx"
 
 # Create the CA Key and Certificate for signing Client Certs
 system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
@@ -45,7 +46,9 @@ system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj} -out #{$clie
 # Sign the client certificate with our CA cert.
 system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ}")
 
-system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined}")
+system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined_pem}")
+
+system("openssl pkcs12 -export -out #{$client_combined_pfx} -inkey #{$client_priv_nopass} -in #{$client_publ} -certfile #{$client_ca_root_publ} -passout #{$pass}")
 
 system("sudo systemctl restart nginx")
 
