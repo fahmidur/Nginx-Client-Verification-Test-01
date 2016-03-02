@@ -17,8 +17,9 @@ installed then don't bother.
 
 Almost all of the operations of the script is consolidated into one file, the *generate* file.
 
-Run ``./generate`` - This will create a file called *test_client_verification_server.nginx* from the test_client_verification_server.nginx.erb.
-Note, that all of the tests will fail for the first, I can fix that but after all this is a "quick and dirty test".
+Run ``./generate`` - This will create a file called *test_client_verification_server.nginx* from the test_client_verification_server.nginx.erb. 
+
+Expect all tests to fail on this first-run because nginx configuration is not built and symlinked.
 
 Then create a symlink in /etc/nginx/sites-enabled to the newly generated conf file. If you do not have an /etc/nginx/sites-enabled, you may create one and add the following line to your /etc/nginx/nginx.conf:
 ```
