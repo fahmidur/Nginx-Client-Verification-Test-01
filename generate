@@ -148,6 +148,7 @@ system("openssl genrsa #{$enc} -out #{$client_ca_im01_priv} -passout #{$pass} #{
 system("openssl rsa -in #{$client_ca_im01_priv} -out #{$client_ca_im01_priv_nopass} -passin #{$pass}")
 system("openssl req -new -key #{$client_ca_im01_priv_nopass} -out #{$client_ca_im01_csr} -subj '#{$client_ca_im01_subj}' -passin #{$pass}")
 system("openssl x509 -req -in #{$client_ca_im01_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -CAcreateserial -CAserial #{$client_ca_root_srl} -extfile v3_ca.ext -out #{$client_ca_im01_publ} -days 365 -sha256 -passin #{$pass}")
+assert_valid_chain($client_ca_root_publ, $client_ca_im01_publ)
 
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT 2 KEY, CSR, and SIGN WITH CLIENT INTERMEDIATE CA
