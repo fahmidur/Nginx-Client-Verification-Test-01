@@ -8,8 +8,8 @@ $url = "https://lvh.me"
 command = [];
 command.push "curl -vv"
 command.push "--cacert output/server_publ.crt"
-# command.push "--key output/client_priv.key.nopass"
-# command.push "--cert output/client_publ.crt"
+command.push "--key output/client_priv.key.nopass"
+command.push "--cert output/client_publ.crt"
 command.push $url
 command = command.join(' ')
 puts "---------------------------"

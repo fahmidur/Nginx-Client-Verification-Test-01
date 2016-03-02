@@ -2,9 +2,10 @@
 
 system("./cleanup")
 
-$bits = 4096;
+$bits = 1024;
+$enc = "-des3"
+
 $pass = "file:inputs/passphrase.txt"
-$enc = "-aes128"
 $subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
 $out = "./output"
 
@@ -48,4 +49,7 @@ system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined}")
 
 system("sudo systemctl restart nginx")
 
-system("./curl_lvh_with_ca_cert")
+puts "************* Preparing to CURL"
+
+sleep 1
+puts `./curl_lvh_with_ca_crt`
