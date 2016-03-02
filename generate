@@ -13,8 +13,8 @@ def assert_valid_pair(publ, priv)
   publ_mod = `openssl x509 -noout -modulus -in #{publ}`
   priv_mod = `openssl rsa -noout -modulus -in #{priv}`
 
-  # puts "* PUBL_MOD = #{publ_mod}"
-  # puts "* PRIV_MOD = #{priv_mod}"
+  puts "* PUBL_MOD = #{publ_mod}"
+  puts "* PRIV_MOD = #{priv_mod}"
 
   if(publ_mod != priv_mod)
     die_with_error("KEY-PAIR-DOES-NOT-MATCH")
