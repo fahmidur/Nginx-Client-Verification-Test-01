@@ -80,8 +80,10 @@ $client2_priv = "#{$out}/client2_priv.key"
 $client2_publ = "#{$out}/client2_publ.crt"
 $client2_csr  = "#{$out}/client2_csr"
 $client2_priv_nopass = "#{$client2_priv}.nopass"
-$client2_combined_pem = "#{$out}/client2_combined.pem"
-$client2_combined_pfx = "#{$out}/client2_combined.pfx"
+$client2_publ_fullchain = "#{$out}/client2_publ.fullchain"
+
+# $client2_combined_pem = "#{$out}/client2_combined.pem"
+# $client2_combined_pfx = "#{$out}/client2_combined.pfx"
 
 
 #---------------------------------------------------------------------------------------------
@@ -142,7 +144,7 @@ unless assertion_failed
 end
 
 #---------------------------------------------------------------------------------------------
-#--- CREATE CLIENT INTERMEDIATE 01 CA
+#--- CREATE CLIENT INTERMEDIATE-01 CA
 #---------------------------------------------------------------------------------------------
 system("openssl genrsa #{$enc} -out #{$client_ca_im01_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client_ca_im01_priv} -out #{$client_ca_im01_priv_nopass} -passin #{$pass}")
@@ -151,18 +153,20 @@ system("openssl x509 -req -in #{$client_ca_im01_csr} -CA #{$client_ca_root_publ}
 assert_valid_chain($client_ca_root_publ, $client_ca_im01_publ)
 
 #---------------------------------------------------------------------------------------------
-#--- CREATE CLIENT 2 KEY, CSR, and SIGN WITH CLIENT INTERMEDIATE CA
+#--- CREATE CLIENT 2 KEY, CSR, and SIGN WITH CLIENT INTERMEDIATE-01 CA
 #---------------------------------------------------------------------------------------------
 system("openssl genrsa #{$enc} -out #{$client2_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client2_priv} -passin #{$pass} -out #{$client2_priv_nopass}")
 system("openssl req -new -key #{$client2_priv_nopass} -subj #{$subj_client2} -out #{$client2_csr}")
-
 # Sign the client certificate with client's CA
-system("openssl x509 -req -days 360 -in #{$client2_csr} -CA #{$client_publ} -CAkey #{$client_priv_nopass} -set_serial 01 -out #{$client2_publ}")
+system("openssl x509 -req -days 360 -in #{$client2_csr} -CA #{$client_ca_im01_publ} -CAkey #{$client_ca_im01_priv_nopass} -set_serial 01 -out #{$client2_publ}")
+# Client2 is signed by intermediate, and requires a fullchain
+system("cat #{$client2_publ} #{$client_ca_im01_publ} #{$client_ca_root_publ} > #{$client2_publ_fullchain}")
+assert_valid_chain($client2_publ_fullchain, $client2_publ)
 
-
-system("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
-system("openssl pkcs12 -export -out #{$client2_combined_pfx} -inkey #{$client2_priv_nopass} -in #{$client2_publ} -certfile #{$client_publ} -passout #{$pass}")
+# Combine Client Private Key and Client Public Key into one .pem to convert to PKCS12 File - for Chrome/Some-Browser
+# system("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
+# system("openssl pkcs12 -export -out #{$client2_combined_pfx} -inkey #{$client2_priv_nopass} -in #{$client2_publ} -certfile #{$client_publ} -passout #{$pass}")
 
 
 system("sudo systemctl restart nginx")
