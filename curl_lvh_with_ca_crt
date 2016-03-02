@@ -40,6 +40,7 @@ end
 
 puts "-------------------------------------------------------------".green
 puts "--- CLIENT-2 is CURLing the server WITH fullchain".green
+puts "--- CLIENT-2 is signed by intermediate CA".green
 puts "--- EXPECTING SUCCESS".green
 puts "-------------------------------------------------------------".green
 command = [];
@@ -55,6 +56,27 @@ puts "---------------------------".green
 output = `#{command}`
 puts output.light_blue
 if(output =~ /Welcome to nginx!/i)
+  puts "SUCCESS".green
+else
+  puts "FAIL".red
+end
+
+puts "-------------------------------------------------------------".green
+puts "--- CLIENT-2 is CURLing the server WITHOUT fullchain".green
+puts "--- CLIENT-2 is signed by intermediate CA".green
+puts "--- EXPECTING FAIL".green
+puts "-------------------------------------------------------------".green
+command = [];
+command.push "curl -vv"
+command.push $arg_cacert
+command.push $url
+command = command.join(' ')
+puts "---------------------------".green
+puts "--- EXECUTING: #{command} ".green
+puts "---------------------------".green
+output = `#{command}`
+puts output.light_blue
+if(output =~ /400 Bad Request/i)
   puts "SUCCESS".green
 else
   puts "FAIL".red
