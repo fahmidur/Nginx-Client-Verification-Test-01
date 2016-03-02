@@ -26,5 +26,7 @@ Then create a symlink in /etc/nginx/sites-enabled to the newly generated conf fi
 include /etc/nginx/sites-enabled/*;
 ```
 
-Lastly, run ``./generate`` *again* to run the tests, you will be prompted for your root password to restart nginx. Woops: the restart line
-expects that you're running systemd, if you're on upstart, then feel free to modify as need.
+Lastly, run ``./generate`` *again* to run the tests, you will be prompted for your root password to restart nginx. 
+
+The restart portion of this script, attempts to detect whether you're on systemd or upstart. 
+I am on systemd, therefore this has only been tested on systemd. Apologies for thsoe who are an another init.
