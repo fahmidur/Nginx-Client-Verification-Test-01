@@ -1,8 +1,29 @@
 #!/usr/bin/env ruby
 
+
+def die_with_error(msg)
+  puts "ERROR: #{msg}"
+  exit 1
+end
+
+def is_valid_pair(publ, priv)
+  # puts `openssl x509 -noout -text -in #{publ}`
+  # puts `openssl rsa -noout -text -in #{priv}`
+  
+  publ_mod = `openssl x509 -noout -modulus -in #{publ}`
+  priv_mod = `openssl rsa -noout -modulus -in #{priv}`
+
+  # puts "* PUBL_MOD = #{publ_mod}"
+  # puts "* PRIV_MOD = #{priv_mod}"
+
+  if(publ_mod != priv_mod)
+    die_with_error("KEY-PAIR-DOES-NOT-MATCH")
+  end
+end
+
 system("./cleanup")
 
-$bits = 1024;
+$bits = 1024
 $enc = "-des3"
 
 $pass = "file:inputs/passphrase.txt"
@@ -30,6 +51,9 @@ system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{
 system("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopass} -passin #{$pass}")
 system("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{$pass} -subj '#{$subj}' -out #{$client_ca_root_publ}")
 
+# check CA Private <-> CA Public
+is_valid_pair($client_ca_root_publ, $client_ca_root_priv_nopass)
+__END__
 # Create the Server Key, CSR, and Certificate
 system("openssl genrsa #{$enc} -out #{$server_priv} -passout #{$pass} #{$bits}")
 system("openssl req -new -key #{$server_priv} -passin #{$pass} -subj '#{$subj}' -out #{$server_csr}")
