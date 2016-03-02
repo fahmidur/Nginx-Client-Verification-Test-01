@@ -6,7 +6,7 @@ def die_with_error(msg)
   exit 1
 end
 
-def is_valid_pair(publ, priv)
+def assert_valid_pair(publ, priv)
   # puts `openssl x509 -noout -text -in #{publ}`
   # puts `openssl rsa -noout -text -in #{priv}`
   
@@ -52,7 +52,7 @@ system("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopa
 system("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{$pass} -subj '#{$subj}' -out #{$client_ca_root_publ}")
 
 # check CA Private <-> CA Public
-is_valid_pair($client_ca_root_publ, $client_ca_root_priv_nopass)
+assert_valid_pair($client_ca_root_publ, $client_ca_root_priv_nopass)
 __END__
 # Create the Server Key, CSR, and Certificate
 system("openssl genrsa #{$enc} -out #{$server_priv} -passout #{$pass} #{$bits}")
