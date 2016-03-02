@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-
+require 'colorize'
 
 def die_with_error(msg)
   puts "ERROR: #{msg}"
@@ -29,6 +29,7 @@ $enc = "-des3"
 $pass = "file:inputs/passphrase.txt"
 $subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
 $subj_client = "/C=US/ST=California/L=LosAngeles/CN=client.lvh.me"
+$subj_client2 = "/C=US/ST=California/L=LosAngeles/CN=client2.lvh.me"
 $out = "./output"
 
 $client_ca_root_priv = "#{$out}/client_ca_root_priv.key"
@@ -47,6 +48,14 @@ $client_priv_nopass = "#{$client_priv}.nopass"
 $client_combined_pem = "#{$out}/client_combined.pem"
 $client_combined_pfx = "#{$out}/client_combined.pfx"
 
+$client2_priv = "#{$out}/client2_priv.key"
+$client2_publ = "#{$out}/client2_publ.crt"
+$client2_csr  = "#{$out}/client2_csr"
+$client2_priv_nopass = "#{$client2_priv}.nopass"
+$client2_combined_pem = "#{$out}/client2_combined.pem"
+$client2_combined_pfx = "#{$out}/client2_combined.pfx"
+
+
 # Create the CA Key and Certificate for signing Client Certs
 system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopass} -passin #{$pass}")
@@ -63,6 +72,10 @@ system("openssl x509 -req -days 365 -in #{$server_csr} -signkey #{$server_priv_n
 # system("openssl x509 -req -days 365 -in #{$server_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$server_publ}");
 assert_valid_pair($server_publ, $server_priv_nopass)
 
+
+#---------------------------------------------------------------------------------------------
+#--- CREATE CLIENT 1
+#---------------------------------------------------------------------------------------------
 # Create the Client Key and CSR
 system("openssl genrsa #{$enc} -out #{$client_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client_priv} -passin #{$pass} -out #{$client_priv_nopass}")
@@ -74,9 +87,23 @@ system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_pub
 system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined_pem}")
 system("openssl pkcs12 -export -out #{$client_combined_pfx} -inkey #{$client_priv_nopass} -in #{$client_publ} -certfile #{$client_ca_root_publ} -passout #{$pass}")
 
+
+#---------------------------------------------------------------------------------------------
+#--- CREATE CLIENT 2
+#---------------------------------------------------------------------------------------------
+system("openssl genrsa #{$enc} -out #{$client2_priv} -passout #{$pass} #{$bits}")
+system("openssl rsa -in #{$client2_priv} -passin #{$pass} -out #{$client2_priv_nopass}")
+system("openssl req -new -key #{$client2_priv_nopass} -subj #{$subj_client2} -out #{$client2_csr}")
+
+# Sign the client certificate with client's CA
+system("openssl x509 -req -days 365 -in #{$client2_csr} -CA #{$client_publ} -CAkey #{$client_priv_nopass} -set_serial 01 -out #{$client2_publ}")
+
+
+system("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
+system("openssl pkcs12 -export -out #{$client2_combined_pfx} -inkey #{$client2_priv_nopass} -in #{$client2_publ} -certfile #{$client_publ} -passout #{$pass}")
+
+
 system("sudo systemctl restart nginx")
-
-puts "************* Preparing to CURL"
-
+puts "************* Preparing TESTS. SLEEPING...".green
 sleep 1
 puts `./curl_lvh_with_ca_crt`
