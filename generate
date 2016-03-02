@@ -28,6 +28,7 @@ $enc = "-des3"
 
 $pass = "file:inputs/passphrase.txt"
 $subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
+$subj_client = "/C=US/ST=California/L=LosAngeles/CN=client.lvh.me"
 $out = "./output"
 
 $client_ca_root_priv = "#{$out}/client_ca_root_priv.key"
@@ -65,7 +66,7 @@ assert_valid_pair($server_publ, $server_priv_nopass)
 # Create the Client Key and CSR
 system("openssl genrsa #{$enc} -out #{$client_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client_priv} -passin #{$pass} -out #{$client_priv_nopass}")
-system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj} -out #{$client_csr}")
+system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj_client} -out #{$client_csr}")
 
 # Sign the client certificate with our CA cert.
 system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ}")

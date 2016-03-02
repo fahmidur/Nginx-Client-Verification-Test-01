@@ -17,3 +17,6 @@ puts "EXECUTING:"
 puts command
 puts "---------------------------"
 system(command)
+
+puts "EXPECTING THIS TO FAIL: "
+puts `curl --cacert output/server_publ.crt #{$url}`
