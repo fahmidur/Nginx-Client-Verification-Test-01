@@ -34,7 +34,6 @@ system("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{
 system("openssl genrsa #{$enc} -out #{$server_priv} -passout #{$pass} #{$bits}")
 system("openssl req -new -key #{$server_priv} -passin #{$pass} -subj '#{$subj}' -out #{$server_csr}")
 system("openssl rsa -in #{$server_priv} -out #{$server_priv_nopass} -passin #{$pass}")
-
 # SELF-SIGN
 system("openssl x509 -req -days 365 -in #{$server_csr} -signkey #{$server_priv_nopass} -out #{$server_publ}");
 
