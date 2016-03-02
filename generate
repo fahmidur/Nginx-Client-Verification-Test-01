@@ -45,3 +45,7 @@ system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj} -out #{$clie
 system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ}")
 
 system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined}")
+
+system("sudo systemctl restart nginx")
+
+system("./curl_lvh_with_ca_cert")
