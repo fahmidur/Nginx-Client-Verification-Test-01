@@ -8,6 +8,7 @@ server {
 
     ssl_client_certificate /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/client_ca_root_publ.crt;
     ssl_verify_client on;
+    ssl_verify_depth 2;
 
     location / {
         root   /usr/share/nginx/html;
