@@ -7,7 +7,7 @@ server {
     ssl_certificate_key  /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_priv.key.nopass;
 
     ssl_client_certificate /home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/client_ca_root_publ.crt;
-    ssl_verify_client optional;
+    ssl_verify_client off;
 
     location / {
         root   /usr/share/nginx/html;
