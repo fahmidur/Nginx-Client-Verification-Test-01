@@ -29,8 +29,8 @@ $enc = "-des3"
 $pass = "file:inputs/passphrase.txt"
 $subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
 $subj_client = "/C=US/ST=California/L=LosAngeles/CN=client.lvh.me"
-$subj_intermediate = "/C=US/ST=California/L=LosAngeles/CN=intermediate.lvh.me"
 $subj_client2 = "/C=US/ST=California/L=LosAngeles/CN=client2.lvh.me"
+$subj_intermediate = "/C=US/ST=California/L=LosAngeles/CN=intermediate.lvh.me"
 $out = "./output"
 
 $client_ca_root_priv = "#{$out}/client_ca_root_priv.key"
@@ -49,13 +49,7 @@ $client_priv_nopass = "#{$client_priv}.nopass"
 $client_combined_pem = "#{$out}/client_combined.pem"
 $client_combined_pfx = "#{$out}/client_combined.pfx"
 
-$intermediate_config = "./intermediate_ca.conf"
-$intermediate_dir = "./output/intermediate"
-$intermediate_subdirs = %w{certs crl csr newcerts private}
-$intermediate_priv = "#{$intermediate_dir}/private/intermediate_priv.key"
-$intermediate_priv_nopass = "#{$intermediate_dir}/private/intermediate_priv.key.nopass"
-$intermediate_csr = "#{$intermediate_dir}/csr/intermediate.csr"
-$intermediate_publ = "#{$intermediate_dir}/certs/intermediate_publ.crt"
+$intermediate_csr = "#{$out}/intermediate.csr"
 
 $client2_priv = "#{$out}/client2_priv.key"
 $client2_publ = "#{$out}/client2_publ.crt"
@@ -96,26 +90,10 @@ system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_pub
 system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined_pem}")
 system("openssl pkcs12 -export -out #{$client_combined_pfx} -inkey #{$client_priv_nopass} -in #{$client_publ} -certfile #{$client_ca_root_publ} -passout #{$pass}")
 
-
-# Create Intermediate
-puts "********** GENERATING INTERMEDIATE".red
-system("mkdir -p #{$intermediate_dir}")
-$intermediate_subdirs.each do |dir|
-  system("mkdir -p #{$intermediate_dir}/#{dir}")
+out = `openssl verify -CAfile #{$client_ca_root_publ} #{$client_publ}`.chomp
+unless(out == "#{$client_publ}: OK")
+  die_with_error("client_publ mismatch")
 end
-system("echo 1000 > #{$intermediate_dir}/serial")
-system("echo 1000 > #{$intermediate_dir}/crlnumber")
-
-system("openssl genrsa #{$enc} -out #{$intermediate_priv} -passout #{$pass} #{$bits}")
-system("openssl rsa -in #{$intermediate_priv} -out #{$intermediate_priv_nopass} -passin #{$pass}")
-system("openssl req -config #{$intermediate_config} -new -sha256 -key #{$intermediate_priv_nopass} -subj '#{$subj_intermediate}' -passout #{$pass} -out #{$intermediate_csr}")
-puts "**** HERE 001".red
-# Warning this time use root CA config file for some reason, so try default
-system("openssl ca -config #{$intermediate_config} -extensions v3_intermediate_ca -days 30 -notext -md sha256 -in #{$intermediate_csr}  -out #{$intermediate_publ}")
-
-puts "************************* DONE GENERATING INTERMEDIATE".red
-# system("openssl req -new -sha256 -key #{$client_priv_nopass} -subj '#{$subj_intermediate}' -out #{$intermediate_csr}")
-# puts `openssl ca -extensions v3_intermediate_ca -days 365 -notext -md sha256 -in #{$intermediate_csr} -out #{$intermediate_crt}`
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT 2
 #---------------------------------------------------------------------------------------------
@@ -124,7 +102,7 @@ system("openssl rsa -in #{$client2_priv} -passin #{$pass} -out #{$client2_priv_n
 system("openssl req -new -key #{$client2_priv_nopass} -subj #{$subj_client2} -out #{$client2_csr}")
 
 # Sign the client certificate with client's CA
-system("openssl x509 -req -days 365 -in #{$client2_csr} -CA #{$client_publ} -CAkey #{$client_priv_nopass} -set_serial 01 -out #{$client2_publ}")
+system("openssl x509 -req -days 360 -in #{$client2_csr} -CA #{$client_publ} -CAkey #{$client_priv_nopass} -set_serial 01 -out #{$client2_publ}")
 
 
 system("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
