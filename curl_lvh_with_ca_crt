@@ -2,6 +2,7 @@
 require 'colorize'
 
 $url = "https://lvh.me"
+$arg_cacert = "--cacert output/server_ca_root_publ.crt"
 
 puts "-------------------------------------------------------------".green
 puts "--- CLIENT1 is CURLing the server WITH cert".green
@@ -9,14 +10,14 @@ puts "--- EXPECTING SUCCESS".green
 puts "-------------------------------------------------------------".green
 command = [];
 command.push "curl -vv"
-command.push "--cacert output/server_publ.crt"
+command.push $arg_cacert
 command.push "--key output/client_priv.key.nopass"
 command.push "--cert output/client_publ.crt"
 command.push $url
 command = command.join(' ')
 puts "---------------------------".green
 puts "--- EXECUTING: #{command} ".green
-puts "---------------------------"
+puts "---------------------------".green
 output = `#{command}`
 puts output.light_blue
 if(output =~ /Welcome to nginx!/i)
@@ -29,7 +30,7 @@ puts "-------------------------------------------------------------".green
 puts "--- CLIENT1 is CURLing server WITHOUT cert".green
 puts "--- EXPECTING FAIL: ".green
 puts "-------------------------------------------------------------".green
-output = `curl --cacert output/server_publ.crt #{$url}`
+output = `curl #{$arg_cacert} #{$url}`
 puts output.light_blue
 if(output =~ /400 Bad Request/i)
   puts "SUCCESS".green
