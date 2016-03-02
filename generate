@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 require 'colorize'
+require 'ostruct'
+require 'pathname'
+require 'erb'
 
 def assert_valid_chain(ca_crt, ta_crt)
   out = `openssl verify -CAfile #{ca_crt} #{ta_crt}`.chomp
@@ -167,6 +170,20 @@ assert_valid_chain($client2_publ_fullchain, $client2_publ)
 # Combine Client Private Key and Client Public Key into one .pem to convert to PKCS12 File - for Chrome/Some-Browser
 # system("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
 # system("openssl pkcs12 -export -out #{$client2_combined_pfx} -inkey #{$client2_priv_nopass} -in #{$client2_publ} -certfile #{$client_publ} -passout #{$pass}")
+
+
+#---------------------------------------------------------------------------------------------
+#--- GENERATE NGINX CONF FILE FROM TEMPLATE
+#---------------------------------------------------------------------------------------------
+namespace = OpenStruct.new({
+  :server_publ => Pathname.new($server_publ).realpath.to_s,
+  :server_priv_nopass => Pathname.new($server_priv_nopass).realpath.to_s,
+  :client_ca_root_publ => Pathname.new($client_ca_root_publ).realpath.to_s
+});
+puts namespace
+nginx_template = IO.read("test_client_verification_server.nginx.erb")
+nginx_conf = ERB.new(nginx_template).result(namespace.instance_eval { binding })
+IO.write("test_client_verification_server.nginx", nginx_conf)
 
 
 system("sudo systemctl restart nginx")
