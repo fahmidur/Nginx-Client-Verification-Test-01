@@ -50,16 +50,16 @@ $client_combined_pfx = "#{$out}/client_combined.pfx"
 system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopass} -passin #{$pass}")
 system("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{$pass} -subj '#{$subj}' -out #{$client_ca_root_publ}")
-
 # check CA Private <-> CA Public
 assert_valid_pair($client_ca_root_publ, $client_ca_root_priv_nopass)
-__END__
+
 # Create the Server Key, CSR, and Certificate
 system("openssl genrsa #{$enc} -out #{$server_priv} -passout #{$pass} #{$bits}")
 system("openssl req -new -key #{$server_priv} -passin #{$pass} -subj '#{$subj}' -out #{$server_csr}")
 system("openssl rsa -in #{$server_priv} -out #{$server_priv_nopass} -passin #{$pass}")
 # SELF-SIGN
 system("openssl x509 -req -days 365 -in #{$server_csr} -signkey #{$server_priv_nopass} -out #{$server_publ}");
+assert_valid_pair($server_publ, $server_priv_nopass)
 
 # Create the Client Key and CSR
 system("openssl genrsa #{$enc} -out #{$client_priv} -passout #{$pass} #{$bits}")
