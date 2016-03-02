@@ -29,6 +29,7 @@ $enc = "-des3"
 $pass = "file:inputs/passphrase.txt"
 $subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
 $subj_client = "/C=US/ST=California/L=LosAngeles/CN=client.lvh.me"
+$subj_intermediate = "/C=US/ST=California/L=LosAngeles/CN=intermediate.lvh.me"
 $subj_client2 = "/C=US/ST=California/L=LosAngeles/CN=client2.lvh.me"
 $out = "./output"
 
@@ -47,6 +48,14 @@ $client_csr  = "#{$out}/client_csr"
 $client_priv_nopass = "#{$client_priv}.nopass"
 $client_combined_pem = "#{$out}/client_combined.pem"
 $client_combined_pfx = "#{$out}/client_combined.pfx"
+
+$intermediate_config = "./intermediate_ca.conf"
+$intermediate_dir = "./output/intermediate"
+$intermediate_subdirs = %w{certs crl csr newcerts private}
+$intermediate_priv = "#{$intermediate_dir}/private/intermediate_priv.key"
+$intermediate_priv_nopass = "#{$intermediate_dir}/private/intermediate_priv.key.nopass"
+$intermediate_csr = "#{$intermediate_dir}/csr/intermediate.csr"
+$intermediate_publ = "#{$intermediate_dir}/certs/intermediate_publ.crt"
 
 $client2_priv = "#{$out}/client2_priv.key"
 $client2_publ = "#{$out}/client2_publ.crt"
@@ -88,6 +97,22 @@ system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined_pem}")
 system("openssl pkcs12 -export -out #{$client_combined_pfx} -inkey #{$client_priv_nopass} -in #{$client_publ} -certfile #{$client_ca_root_publ} -passout #{$pass}")
 
 
+# Create Intermediate
+puts "********** GENERATING INTERMEDIATE".red
+system("mkdir -p #{$intermediate_dir}")
+$intermediate_subdirs.each do |dir|
+  system("mkdir -p #{$intermediate_dir}/#{dir}")
+end
+system("echo 1000 > #{$intermediate_dir}/serial")
+system("echo 1000 > #{$intermediate_dir}/crlnumber")
+
+system("openssl genrsa #{$enc} -out #{$intermediate_priv} -passout #{$pass} #{$bits}")
+system("openssl rsa -in #{$intermediate_priv} -out #{$intermediate_priv_nopass} -passin #{$pass}")
+system("openssl req -config #{$intermediate_config} -new -sha256 -key #{$intermediate_priv_nopass} -subj '#{$subj_intermediate}' -passout #{$pass} -out #{$intermediate_csr}")
+
+puts "************************* DONE GENERATING INTERMEDIATE".red
+# system("openssl req -new -sha256 -key #{$client_priv_nopass} -subj '#{$subj_intermediate}' -out #{$intermediate_csr}")
+# puts `openssl ca -extensions v3_intermediate_ca -days 365 -notext -md sha256 -in #{$intermediate_csr} -out #{$intermediate_crt}`
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT 2
 #---------------------------------------------------------------------------------------------
