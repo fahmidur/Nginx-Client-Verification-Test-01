@@ -109,6 +109,9 @@ system("echo 1000 > #{$intermediate_dir}/crlnumber")
 system("openssl genrsa #{$enc} -out #{$intermediate_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$intermediate_priv} -out #{$intermediate_priv_nopass} -passin #{$pass}")
 system("openssl req -config #{$intermediate_config} -new -sha256 -key #{$intermediate_priv_nopass} -subj '#{$subj_intermediate}' -passout #{$pass} -out #{$intermediate_csr}")
+puts "**** HERE 001".red
+# Warning this time use root CA config file for some reason, so try default
+system("openssl ca -config #{$intermediate_config} -extensions v3_intermediate_ca -days 30 -notext -md sha256 -in #{$intermediate_csr}  -out #{$intermediate_publ}")
 
 puts "************************* DONE GENERATING INTERMEDIATE".red
 # system("openssl req -new -sha256 -key #{$client_priv_nopass} -subj '#{$subj_intermediate}' -out #{$intermediate_csr}")
