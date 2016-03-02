@@ -48,6 +48,13 @@ $client_ca_root_subj = "/C=US/ST=California/L=LosAngeles/CN=root_client.lvh.me"
 $client_ca_root_priv = "#{$out}/client_ca_root_priv.key"
 $client_ca_root_publ = "#{$out}/client_ca_root_publ.crt"
 $client_ca_root_priv_nopass = "#{$client_ca_root_priv}.nopass"
+$client_ca_root_srl = "#{$out}/client_ca_root_publ.srl"
+
+$client_ca_im01_subj = "/C=US/ST=California/L=LosAngeles/CN=im01_client.lvh.me"
+$client_ca_im01_csr = "#{$out}/client_ca_im01_csr"
+$client_ca_im01_priv = "#{$out}/client_ca_im01_priv.key"
+$client_ca_im01_publ = "#{$out}/client_ca_im01_publ.crt"
+$client_ca_im01_priv_nopass = "#{$client_ca_im01_priv}.nopass"
 
 $server_ca_root_subj = "/C=US/ST=California/L=LosAngeles/CN=root_server.lvh.me"
 $server_ca_root_priv = "#{$out}/server_ca_root_priv.key"
@@ -135,9 +142,12 @@ unless assertion_failed
 end
 
 #---------------------------------------------------------------------------------------------
-#--- CREATE CLIENT INTERMEDIATE CA
+#--- CREATE CLIENT INTERMEDIATE 01 CA
 #---------------------------------------------------------------------------------------------
-
+system("openssl genrsa #{$enc} -out #{$client_ca_im01_priv} -passout #{$pass} #{$bits}")
+system("openssl rsa -in #{$client_ca_im01_priv} -out #{$client_ca_im01_priv_nopass} -passin #{$pass}")
+system("openssl req -new -key #{$client_ca_im01_priv_nopass} -out #{$client_ca_im01_csr} -subj '#{$client_ca_im01_subj}' -passin #{$pass}")
+system("openssl x509 -req -in #{$client_ca_im01_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -CAcreateserial -CAserial #{$client_ca_root_srl} -extfile v3_ca.ext -out #{$client_ca_im01_publ} -days 365 -sha256 -passin #{$pass}")
 
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT 2 KEY, CSR, and SIGN WITH CLIENT INTERMEDIATE CA
