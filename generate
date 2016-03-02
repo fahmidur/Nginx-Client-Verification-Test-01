@@ -186,7 +186,19 @@ nginx_conf = ERB.new(nginx_template).result(namespace.instance_eval { binding })
 IO.write("test_client_verification_server.nginx", nginx_conf)
 
 
-system("sudo systemctl restart nginx")
+puts "** Restarting NGINX"
+if     File.exists?("/usr/lib/systemd")
+  puts "** USING systemd"
+  system("sudo systemctl restart nginx")
+elsif  File.exists?("/usr/share/upstart")
+  puts "** USING upstart"
+  system("service nginx restart")
+else
+  puts "** ERROR: Could not determine type of init".red
+  exit 1
+end
+
 puts "************* Preparing TESTS. SLEEPING...".green
 sleep 2
+
 puts `./curl_lvh_with_ca_crt`
