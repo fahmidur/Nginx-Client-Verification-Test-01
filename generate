@@ -41,10 +41,6 @@ $bits = 1024
 $enc = "-des3"
 
 $pass = "file:inputs/passphrase.txt"
-$subj = "/C=US/ST=California/L=LosAngeles/CN=lvh.me"
-$subj_client = "/C=US/ST=California/L=LosAngeles/CN=client.lvh.me"
-$subj_client2 = "/C=US/ST=California/L=LosAngeles/CN=client2.lvh.me"
-$subj_intermediate = "/C=US/ST=California/L=LosAngeles/CN=intermediate.lvh.me"
 $out = "./output"
 
 $client_ca_root_subj = "/C=US/ST=California/L=LosAngeles/CN=root_client.lvh.me"
@@ -70,6 +66,7 @@ $server_csr  = "#{$out}/server_csr"
 $server_publ = "#{$out}/server_publ.crt"
 $server_priv_nopass = "#{$server_priv}.nopass"
 
+$client_subj = "/C=US/ST=California/L=LosAngeles/CN=client.lvh.me"
 $client_priv = "#{$out}/client_priv.key"
 $client_publ = "#{$out}/client_publ.crt"
 $client_csr  = "#{$out}/client_csr"
@@ -79,6 +76,7 @@ $client_combined_pfx = "#{$out}/client_combined.pfx"
 
 $intermediate_csr = "#{$out}/intermediate.csr"
 
+$client2_subj = "/C=US/ST=California/L=LosAngeles/CN=client2.lvh.me"
 $client2_priv = "#{$out}/client2_priv.key"
 $client2_publ = "#{$out}/client2_publ.crt"
 $client2_csr  = "#{$out}/client2_csr"
@@ -123,7 +121,7 @@ assert_valid_chain($server_ca_root_publ, $server_publ)
 #---------------------------------------------------------------------------------------------
 system("openssl genrsa #{$enc} -passout #{$pass} -out #{$client_priv} #{$bits}")
 system("openssl rsa -in #{$client_priv} -passin #{$pass} -out #{$client_priv_nopass}")
-system("openssl req -new -key #{$client_priv_nopass} -subj #{$subj_client} -out #{$client_csr}")
+system("openssl req -new -key #{$client_priv_nopass} -subj #{$client_subj} -out #{$client_csr}")
 # Sign the client certificate with our CA cert.
 system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ}")
 assert_valid_pair($client_publ, $client_priv_nopass)
@@ -160,7 +158,7 @@ assert_valid_chain($client_ca_root_publ, $client_ca_im01_publ)
 #---------------------------------------------------------------------------------------------
 system("openssl genrsa #{$enc} -out #{$client2_priv} -passout #{$pass} #{$bits}")
 system("openssl rsa -in #{$client2_priv} -passin #{$pass} -out #{$client2_priv_nopass}")
-system("openssl req -new -key #{$client2_priv_nopass} -subj #{$subj_client2} -out #{$client2_csr}")
+system("openssl req -new -key #{$client2_priv_nopass} -subj #{$client2_subj} -out #{$client2_csr}")
 # Sign the client certificate with client's CA
 system("openssl x509 -req -days 360 -in #{$client2_csr} -CA #{$client_ca_im01_publ} -CAkey #{$client_ca_im01_priv_nopass} -set_serial 01 -out #{$client2_publ}")
 # Client2 is signed by intermediate, and requires a fullchain
