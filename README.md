@@ -29,4 +29,4 @@ include /etc/nginx/sites-enabled/*;
 Lastly, run ``./generate`` *again* to run the tests, you will be prompted for your root password to restart nginx. 
 
 The restart portion of this script, attempts to detect whether you're on systemd or upstart. 
-I am on systemd, therefore this has only been tested on systemd. Apologies for thsoe who are an another init.
+I am on systemd, therefore this has only been tested on systemd. Apologies to those who are an another init.
