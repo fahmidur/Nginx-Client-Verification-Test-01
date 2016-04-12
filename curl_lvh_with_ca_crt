@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'colorize'
 
-$url = "https://lvh.me"
+$url = "https://test-nginx-client-cert.lvh.me"
 $arg_cacert = "--cacert output/server_ca_root_publ.crt"
 
 puts "-------------------------------------------------------------".green
