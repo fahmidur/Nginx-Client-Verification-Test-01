@@ -4,10 +4,11 @@ require 'colorize'
 $url = "https://test-nginx-client-cert.lvh.me"
 $arg_cacert = "--cacert output/server_ca_root_publ.crt"
 
-puts "-------------------------------------------------------------".green
-puts "--- CLIENT-1 is CURLing the server WITH cert".green
-puts "--- EXPECTING SUCCESS".green
-puts "-------------------------------------------------------------".green
+puts
+puts "-------------------------------------------------------------".yellow
+puts "--- CLIENT-1 is CURLing the server WITH cert".yellow
+puts "--- EXPECTING Response: 200".yellow
+puts "-------------------------------------------------------------".yellow
 command = [];
 command.push "curl -vv"
 command.push $arg_cacert
@@ -15,9 +16,10 @@ command.push "--key output/client_priv.key.nopass"
 command.push "--cert output/client_publ.crt"
 command.push $url
 command = command.join(' ')
-puts "---------------------------".green
-puts "--- EXECUTING: #{command} ".green
-puts "---------------------------".green
+puts
+puts "---------------------------".yellow
+puts "--- EXECUTING: #{command} ".yellow
+puts "---------------------------".yellow
 output = `#{command}`
 puts output.light_blue
 if(output =~ /Welcome to nginx!/i)
@@ -25,11 +27,11 @@ if(output =~ /Welcome to nginx!/i)
 else
   puts "FAIL".red
 end
-
-puts "-------------------------------------------------------------".green
-puts "--- CLIENT-1 is CURLing server WITHOUT cert".green
-puts "--- EXPECTING FAIL: ".green
-puts "-------------------------------------------------------------".green
+puts
+puts "-------------------------------------------------------------".yellow
+puts "--- CLIENT-1 is CURLing server WITHOUT cert".yellow
+puts "--- EXPECTING Response: 400 Bad Request".yellow
+puts "-------------------------------------------------------------".yellow
 output = `curl #{$arg_cacert} #{$url}`
 puts output.light_blue
 if(output =~ /400 Bad Request/i)
@@ -37,12 +39,12 @@ if(output =~ /400 Bad Request/i)
 else
   puts "FAIL".red
 end
-
-puts "-------------------------------------------------------------".green
-puts "--- CLIENT-2 is CURLing the server WITH fullchain".green
-puts "--- CLIENT-2 is signed by intermediate CA".green
-puts "--- EXPECTING SUCCESS".green
-puts "-------------------------------------------------------------".green
+puts
+puts "-------------------------------------------------------------".yellow
+puts "--- CLIENT-2 is CURLing the server WITH fullchain".yellow
+puts "--- CLIENT-2 is signed by intermediate CA".yellow
+puts "--- EXPECTING Response: 200".yellow
+puts "-------------------------------------------------------------".yellow
 command = [];
 command.push "curl -vv"
 command.push $arg_cacert
@@ -50,9 +52,10 @@ command.push "--key output/client2_priv.key.nopass"
 command.push "--cert output/client2_publ.fullchain"
 command.push $url
 command = command.join(' ')
-puts "---------------------------".green
-puts "--- EXECUTING: #{command} ".green
-puts "---------------------------".green
+puts
+puts "---------------------------".yellow
+puts "--- EXECUTING: #{command} ".yellow
+puts "---------------------------".yellow
 output = `#{command}`
 puts output.light_blue
 if(output =~ /Welcome to nginx!/i)
@@ -60,20 +63,21 @@ if(output =~ /Welcome to nginx!/i)
 else
   puts "FAIL".red
 end
-
-puts "-------------------------------------------------------------".green
-puts "--- CLIENT-2 is CURLing the server WITHOUT fullchain".green
-puts "--- CLIENT-2 is signed by intermediate CA".green
-puts "--- EXPECTING FAIL".green
-puts "-------------------------------------------------------------".green
+puts
+puts "-------------------------------------------------------------".yellow
+puts "--- CLIENT-2 is CURLing the server WITHOUT fullchain".yellow
+puts "--- CLIENT-2 is signed by intermediate CA".yellow
+puts "--- EXPECTING Response: 400 Bad Request".yellow
+puts "-------------------------------------------------------------".yellow
 command = [];
 command.push "curl -vv"
 command.push $arg_cacert
 command.push $url
 command = command.join(' ')
-puts "---------------------------".green
-puts "--- EXECUTING: #{command} ".green
-puts "---------------------------".green
+puts
+puts "---------------------------".yellow
+puts "--- EXECUTING: #{command} ".yellow
+puts "---------------------------".yellow
 output = `#{command}`
 puts output.light_blue
 if(output =~ /400 Bad Request/i)
