@@ -1,7 +1,7 @@
 server {
     listen        443;
     ssl on;
-    server_name lvh.me;
+    server_name test-nginx-client-cert.lvh.me;
 
     ssl_certificate      <%= server_publ %>;
     ssl_certificate_key  <%= server_priv_nopass %>;
