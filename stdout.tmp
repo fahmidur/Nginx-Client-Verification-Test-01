@@ -1,0 +1,146 @@
+EXECUTING: ./cleanup
+EXECUTING: openssl genrsa -des3 -out ./output/client_ca_root_priv.key -passout file:inputs/passphrase.txt 1024
+EXECUTING: openssl rsa -in ./output/client_ca_root_priv.key -out ./output/client_ca_root_priv.key.nopass -passin file:inputs/passphrase.txt
+EXECUTING: openssl req -new -x509 -days 365 -key ./output/client_ca_root_priv.key -passin file:inputs/passphrase.txt -subj '/C=US/ST=California/L=LosAngeles/CN=root_client.test-nginx-client-cert.lvh.me' -out ./output/client_ca_root_publ.crt
+EXECUTING: openssl genrsa -des3 -out ./output/server_ca_root_priv.key -passout file:inputs/passphrase.txt 1024
+EXECUTING: openssl rsa -in ./output/server_ca_root_priv.key -out ./output/server_ca_root_priv.key.nopass -passin file:inputs/passphrase.txt
+EXECUTING: openssl req -new -x509 -days 365 -key ./output/server_ca_root_priv.key -passin file:inputs/passphrase.txt -subj '/C=US/ST=California/L=LosAngeles/CN=root_server.test-nginx-client-cert.lvh.me' -out ./output/server_ca_root_publ.crt
+EXECUTING: openssl genrsa -des3 -out ./output/server_priv.key -passout file:inputs/passphrase.txt 1024
+EXECUTING: openssl req -new -key ./output/server_priv.key -passin file:inputs/passphrase.txt -subj '/C=US/ST=California/L=LosAngeles/CN=test-nginx-client-cert.lvh.me' -out ./output/server_csr
+EXECUTING: openssl rsa -in ./output/server_priv.key -out ./output/server_priv.key.nopass -passin file:inputs/passphrase.txt
+EXECUTING: openssl x509 -req -days 365 -in ./output/server_csr -CA ./output/server_ca_root_publ.crt -CAkey ./output/server_ca_root_priv.key.nopass -set_serial 01 -out ./output/server_publ.crt
+EXECUTING: openssl genrsa -des3 -passout file:inputs/passphrase.txt -out ./output/client_priv.key 1024
+EXECUTING: openssl rsa -in ./output/client_priv.key -passin file:inputs/passphrase.txt -out ./output/client_priv.key.nopass
+EXECUTING: openssl req -new -key ./output/client_priv.key.nopass -subj /C=US/ST=California/L=LosAngeles/CN=client.test-nginx-client-cert.lvh.me -out ./output/client_csr
+EXECUTING: openssl x509 -req -days 365 -in ./output/client_csr -CA ./output/client_ca_root_publ.crt -CAkey ./output/client_ca_root_priv.key.nopass -set_serial 01 -out ./output/client_publ.crt
+EXECUTING: cat ./output/client_publ.crt ./output/client_priv.key.nopass > ./output/client_combined.pem
+EXECUTING: openssl pkcs12 -export -out ./output/client_combined.pfx -inkey ./output/client_priv.key.nopass -in ./output/client_publ.crt -certfile ./output/client_ca_root_publ.crt -passout file:inputs/passphrase.txt
+[0;32;49mEXPECTING ASSERTION TO FAIL[0m
+[0;31;49m-----------------------------------[0m
+[0;31;49m--- assert_valid_chain [0m
+[0;31;49m--- ca_crt = ./output/server_ca_root_publ.crt[0m
+[0;31;49m--- ta_crt = ./output/client_publ.crt[0m
+[0;31;49m-----------------------------------[0m
+[0;32;49mSUCCESS. ASSERTION FAILED AS EXPECTED[0m
+EXECUTING: openssl genrsa -des3 -out ./output/client_ca_im01_priv.key -passout file:inputs/passphrase.txt 1024
+EXECUTING: openssl rsa -in ./output/client_ca_im01_priv.key -out ./output/client_ca_im01_priv.key.nopass -passin file:inputs/passphrase.txt
+EXECUTING: openssl req -new -key ./output/client_ca_im01_priv.key.nopass -out ./output/client_ca_im01_csr -subj '/C=US/ST=California/L=LosAngeles/CN=im01_client.test-nginx-client-cert.lvh.me' -passin file:inputs/passphrase.txt
+EXECUTING: openssl x509 -req -in ./output/client_ca_im01_csr -CA ./output/client_ca_root_publ.crt -CAkey ./output/client_ca_root_priv.key.nopass -CAcreateserial -CAserial ./output/client_ca_root_publ.srl -extfile v3_ca.ext -out ./output/client_ca_im01_publ.crt -days 365 -sha256 -passin file:inputs/passphrase.txt
+EXECUTING: openssl genrsa -des3 -out ./output/client2_priv.key -passout file:inputs/passphrase.txt 1024
+EXECUTING: openssl rsa -in ./output/client2_priv.key -passin file:inputs/passphrase.txt -out ./output/client2_priv.key.nopass
+EXECUTING: openssl req -new -key ./output/client2_priv.key.nopass -subj /C=US/ST=California/L=LosAngeles/CN=client2.test-nginx-client-cert.lvh.me -out ./output/client2_csr
+EXECUTING: openssl x509 -req -days 360 -in ./output/client2_csr -CA ./output/client_ca_im01_publ.crt -CAkey ./output/client_ca_im01_priv.key.nopass -set_serial 01 -out ./output/client2_publ.crt
+EXECUTING: cat ./output/client2_publ.crt ./output/client_ca_im01_publ.crt ./output/client_ca_root_publ.crt > ./output/client2_publ.fullchain
+#<OpenStruct server_publ="/home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_publ.crt", server_priv_nopass="/home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/server_priv.key.nopass", client_ca_root_publ="/home/syed/works/help/hlam/tasks/nginx-verify-client-v2/output/client_ca_root_publ.crt">
+** Restarting NGINX
+** USING systemd
+EXECUTING: sudo systemctl restart nginx
+[0;32;49m************* Preparing TESTS. SLEEPING...[0m
+
+[0;33;49m-------------------------------------------------------------[0m
+[0;33;49m--- CLIENT-1 is CURLing the server WITH cert[0m
+[0;33;49m--- EXPECTING Response: 200[0m
+[0;33;49m-------------------------------------------------------------[0m
+
+[0;33;49m---------------------------[0m
+[0;33;49m--- EXECUTING: curl -vv --cacert output/server_ca_root_publ.crt --key output/client_priv.key.nopass --cert output/client_publ.crt https://test-nginx-client-cert.lvh.me [0m
+[0;33;49m---------------------------[0m
+[0;94;49m<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+[0m
+[0;32;49mSUCCESS[0m
+
+[0;33;49m-------------------------------------------------------------[0m
+[0;33;49m--- CLIENT-1 is CURLing server WITHOUT cert[0m
+[0;33;49m--- EXPECTING Response: 400 Bad Request[0m
+[0;33;49m-------------------------------------------------------------[0m
+[0;94;49m<html>
+<head><title>400 No required SSL certificate was sent</title></head>
+<body bgcolor="white">
+<center><h1>400 Bad Request</h1></center>
+<center>No required SSL certificate was sent</center>
+<hr><center>nginx/1.8.1</center>
+</body>
+</html>
+[0m
+[0;32;49mSUCCESS[0m
+
+[0;33;49m-------------------------------------------------------------[0m
+[0;33;49m--- CLIENT-2 is CURLing the server WITH fullchain[0m
+[0;33;49m--- CLIENT-2 is signed by intermediate CA[0m
+[0;33;49m--- EXPECTING Response: 200[0m
+[0;33;49m-------------------------------------------------------------[0m
+
+[0;33;49m---------------------------[0m
+[0;33;49m--- EXECUTING: curl -vv --cacert output/server_ca_root_publ.crt --key output/client2_priv.key.nopass --cert output/client2_publ.fullchain https://test-nginx-client-cert.lvh.me [0m
+[0;33;49m---------------------------[0m
+[0;94;49m<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+[0m
+[0;32;49mSUCCESS[0m
+
+[0;33;49m-------------------------------------------------------------[0m
+[0;33;49m--- CLIENT-2 is CURLing the server WITHOUT fullchain[0m
+[0;33;49m--- CLIENT-2 is signed by intermediate CA[0m
+[0;33;49m--- EXPECTING Response: 400 Bad Request[0m
+[0;33;49m-------------------------------------------------------------[0m
+
+[0;33;49m---------------------------[0m
+[0;33;49m--- EXECUTING: curl -vv --cacert output/server_ca_root_publ.crt https://test-nginx-client-cert.lvh.me [0m
+[0;33;49m---------------------------[0m
+[0;94;49m<html>
+<head><title>400 No required SSL certificate was sent</title></head>
+<body bgcolor="white">
+<center><h1>400 Bad Request</h1></center>
+<center>No required SSL certificate was sent</center>
+<hr><center>nginx/1.8.1</center>
+</body>
+</html>
+[0m
+[0;32;49mSUCCESS[0m
