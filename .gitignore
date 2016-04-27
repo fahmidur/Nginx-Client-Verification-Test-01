@@ -1,3 +1,4 @@
 output
 output/**
 test_client_verification_server.nginx
+stdout.tmp
