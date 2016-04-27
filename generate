@@ -4,6 +4,11 @@ require 'ostruct'
 require 'pathname'
 require 'erb'
 
+def system_echo(str)
+  puts "EXECUTING: #{str}"
+  system(str)
+end
+
 def assert_valid_chain(ca_crt, ta_crt)
   out = `openssl verify -CAfile #{ca_crt} #{ta_crt}`.chomp
   unless(out == "#{ta_crt}: OK")
@@ -35,7 +40,7 @@ def assert_valid_pair(publ, priv)
   end
 end
 
-system("./cleanup")
+system_echo("./cleanup")
 
 $bits = 1024
 $enc = "-des3"
@@ -87,32 +92,31 @@ $client2_publ_fullchain = "#{$out}/client2_publ.fullchain"
 # $client2_combined_pem = "#{$out}/client2_combined.pem"
 # $client2_combined_pfx = "#{$out}/client2_combined.pfx"
 
-
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT ROOT CA
 #---------------------------------------------------------------------------------------------
-system("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
-system("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopass} -passin #{$pass}")
-system("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{$pass} -subj '#{$client_ca_root_subj}' -out #{$client_ca_root_publ}")
+system_echo("openssl genrsa #{$enc} -out #{$client_ca_root_priv} -passout #{$pass} #{$bits}")
+system_echo("openssl rsa -in #{$client_ca_root_priv} -out #{$client_ca_root_priv_nopass} -passin #{$pass}")
+system_echo("openssl req -new -x509 -days 365 -key #{$client_ca_root_priv} -passin #{$pass} -subj '#{$client_ca_root_subj}' -out #{$client_ca_root_publ}")
 assert_valid_pair($client_ca_root_publ, $client_ca_root_priv_nopass)
 
 
 #---------------------------------------------------------------------------------------------
 #--- CREATE SERVER ROOT CA
 #---------------------------------------------------------------------------------------------
-system("openssl genrsa #{$enc} -out #{$server_ca_root_priv} -passout #{$pass} #{$bits}")
-system("openssl rsa -in #{$server_ca_root_priv} -out #{$server_ca_root_priv_nopass} -passin #{$pass}")
-system("openssl req -new -x509 -days 365 -key #{$server_ca_root_priv} -passin #{$pass} -subj '#{$server_ca_root_subj}' -out #{$server_ca_root_publ}")
+system_echo("openssl genrsa #{$enc} -out #{$server_ca_root_priv} -passout #{$pass} #{$bits}")
+system_echo("openssl rsa -in #{$server_ca_root_priv} -out #{$server_ca_root_priv_nopass} -passin #{$pass}")
+system_echo("openssl req -new -x509 -days 365 -key #{$server_ca_root_priv} -passin #{$pass} -subj '#{$server_ca_root_subj}' -out #{$server_ca_root_publ}")
 assert_valid_pair($server_ca_root_publ, $server_ca_root_priv_nopass)
 
 #---------------------------------------------------------------------------------------------
 #--- CREATE SERVER KEY, CSR, AND SIGN WITH SERVER ROOT CA
 #---------------------------------------------------------------------------------------------
-system("openssl genrsa #{$enc} -out #{$server_priv} -passout #{$pass} #{$bits}")
-system("openssl req -new -key #{$server_priv} -passin #{$pass} -subj '#{$server_subj}' -out #{$server_csr}")
-system("openssl rsa -in #{$server_priv} -out #{$server_priv_nopass} -passin #{$pass}")
-# system("openssl x509 -req -days 365 -in #{$server_csr} -signkey #{$server_priv_nopass} -out #{$server_publ}");
-system("openssl x509 -req -days 365 -in #{$server_csr} -CA #{$server_ca_root_publ} -CAkey #{$server_ca_root_priv_nopass} -set_serial 01 -out #{$server_publ}");
+system_echo("openssl genrsa #{$enc} -out #{$server_priv} -passout #{$pass} #{$bits}")
+system_echo("openssl req -new -key #{$server_priv} -passin #{$pass} -subj '#{$server_subj}' -out #{$server_csr}")
+system_echo("openssl rsa -in #{$server_priv} -out #{$server_priv_nopass} -passin #{$pass}")
+# system_echo("openssl x509 -req -days 365 -in #{$server_csr} -signkey #{$server_priv_nopass} -out #{$server_publ}");
+system_echo("openssl x509 -req -days 365 -in #{$server_csr} -CA #{$server_ca_root_publ} -CAkey #{$server_ca_root_priv_nopass} -set_serial 01 -out #{$server_publ}");
 assert_valid_pair($server_publ, $server_priv_nopass)
 assert_valid_chain($server_ca_root_publ, $server_publ)
 
@@ -120,16 +124,16 @@ assert_valid_chain($server_ca_root_publ, $server_publ)
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT 1 KEY, CSR, AND SIGN WITH CLIENT ROOT CA
 #---------------------------------------------------------------------------------------------
-system("openssl genrsa #{$enc} -passout #{$pass} -out #{$client_priv} #{$bits}")
-system("openssl rsa -in #{$client_priv} -passin #{$pass} -out #{$client_priv_nopass}")
-system("openssl req -new -key #{$client_priv_nopass} -subj #{$client_subj} -out #{$client_csr}")
+system_echo("openssl genrsa #{$enc} -passout #{$pass} -out #{$client_priv} #{$bits}")
+system_echo("openssl rsa -in #{$client_priv} -passin #{$pass} -out #{$client_priv_nopass}")
+system_echo("openssl req -new -key #{$client_priv_nopass} -subj #{$client_subj} -out #{$client_csr}")
 # Sign the client certificate with our CA cert.
-system("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ}")
+system_echo("openssl x509 -req -days 365 -in #{$client_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -set_serial 01 -out #{$client_publ}")
 assert_valid_pair($client_publ, $client_priv_nopass)
 assert_valid_chain($client_ca_root_publ, $client_publ)
 # Combine Client Private Key and Client Public Key into one .pem to convert to PKCS12 File - for Chrome/Some-Browser
-system("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined_pem}")
-system("openssl pkcs12 -export -out #{$client_combined_pfx} -inkey #{$client_priv_nopass} -in #{$client_publ} -certfile #{$client_ca_root_publ} -passout #{$pass}")
+system_echo("cat #{$client_publ} #{$client_priv_nopass} > #{$client_combined_pem}")
+system_echo("openssl pkcs12 -export -out #{$client_combined_pfx} -inkey #{$client_priv_nopass} -in #{$client_publ} -certfile #{$client_ca_root_publ} -passout #{$pass}")
 
 
 assertion_failed = false
@@ -148,27 +152,27 @@ end
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT INTERMEDIATE-01 CA
 #---------------------------------------------------------------------------------------------
-system("openssl genrsa #{$enc} -out #{$client_ca_im01_priv} -passout #{$pass} #{$bits}")
-system("openssl rsa -in #{$client_ca_im01_priv} -out #{$client_ca_im01_priv_nopass} -passin #{$pass}")
-system("openssl req -new -key #{$client_ca_im01_priv_nopass} -out #{$client_ca_im01_csr} -subj '#{$client_ca_im01_subj}' -passin #{$pass}")
-system("openssl x509 -req -in #{$client_ca_im01_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -CAcreateserial -CAserial #{$client_ca_root_srl} -extfile v3_ca.ext -out #{$client_ca_im01_publ} -days 365 -sha256 -passin #{$pass}")
+system_echo("openssl genrsa #{$enc} -out #{$client_ca_im01_priv} -passout #{$pass} #{$bits}")
+system_echo("openssl rsa -in #{$client_ca_im01_priv} -out #{$client_ca_im01_priv_nopass} -passin #{$pass}")
+system_echo("openssl req -new -key #{$client_ca_im01_priv_nopass} -out #{$client_ca_im01_csr} -subj '#{$client_ca_im01_subj}' -passin #{$pass}")
+system_echo("openssl x509 -req -in #{$client_ca_im01_csr} -CA #{$client_ca_root_publ} -CAkey #{$client_ca_root_priv_nopass} -CAcreateserial -CAserial #{$client_ca_root_srl} -extfile v3_ca.ext -out #{$client_ca_im01_publ} -days 365 -sha256 -passin #{$pass}")
 assert_valid_chain($client_ca_root_publ, $client_ca_im01_publ)
 
 #---------------------------------------------------------------------------------------------
 #--- CREATE CLIENT 2 KEY, CSR, and SIGN WITH CLIENT INTERMEDIATE-01 CA
 #---------------------------------------------------------------------------------------------
-system("openssl genrsa #{$enc} -out #{$client2_priv} -passout #{$pass} #{$bits}")
-system("openssl rsa -in #{$client2_priv} -passin #{$pass} -out #{$client2_priv_nopass}")
-system("openssl req -new -key #{$client2_priv_nopass} -subj #{$client2_subj} -out #{$client2_csr}")
+system_echo("openssl genrsa #{$enc} -out #{$client2_priv} -passout #{$pass} #{$bits}")
+system_echo("openssl rsa -in #{$client2_priv} -passin #{$pass} -out #{$client2_priv_nopass}")
+system_echo("openssl req -new -key #{$client2_priv_nopass} -subj #{$client2_subj} -out #{$client2_csr}")
 # Sign the client certificate with client's CA
-system("openssl x509 -req -days 360 -in #{$client2_csr} -CA #{$client_ca_im01_publ} -CAkey #{$client_ca_im01_priv_nopass} -set_serial 01 -out #{$client2_publ}")
+system_echo("openssl x509 -req -days 360 -in #{$client2_csr} -CA #{$client_ca_im01_publ} -CAkey #{$client_ca_im01_priv_nopass} -set_serial 01 -out #{$client2_publ}")
 # Client2 is signed by intermediate, and requires a fullchain
-system("cat #{$client2_publ} #{$client_ca_im01_publ} #{$client_ca_root_publ} > #{$client2_publ_fullchain}")
+system_echo("cat #{$client2_publ} #{$client_ca_im01_publ} #{$client_ca_root_publ} > #{$client2_publ_fullchain}")
 assert_valid_chain($client2_publ_fullchain, $client2_publ)
 
 # Combine Client Private Key and Client Public Key into one .pem to convert to PKCS12 File - for Chrome/Some-Browser
-# system("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
-# system("openssl pkcs12 -export -out #{$client2_combined_pfx} -inkey #{$client2_priv_nopass} -in #{$client2_publ} -certfile #{$client_publ} -passout #{$pass}")
+# system_echo("cat #{$client2_publ} #{$client2_priv_nopass} > #{$client2_combined_pem}")
+# system_echo("openssl pkcs12 -export -out #{$client2_combined_pfx} -inkey #{$client2_priv_nopass} -in #{$client2_publ} -certfile #{$client_publ} -passout #{$pass}")
 
 
 #---------------------------------------------------------------------------------------------
@@ -188,10 +192,10 @@ IO.write("test_client_verification_server.nginx", nginx_conf)
 puts "** Restarting NGINX"
 if     File.exists?("/usr/lib/systemd")
   puts "** USING systemd"
-  system("sudo systemctl restart nginx")
+  system_echo("sudo systemctl restart nginx")
 elsif  File.exists?("/usr/share/upstart")
   puts "** USING upstart"
-  system("service nginx restart")
+  system_echo("service nginx restart")
 else
   puts "** ERROR: Could not determine type of init".red
   exit 1
